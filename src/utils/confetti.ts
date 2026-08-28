@@ -1,51 +1,110 @@
 import confetti from 'canvas-confetti';
 
+/**
+ * Grand Celebration Fireworks & Confetti System
+ * - Fullscreen 360-degree fireworks bursts
+ * - Continuous dual side cannons
+ * - Gold, Coral, Emerald, Sapphire, Ruby sparkle trails & star shapes
+ * - High density & long duration (5.5+ seconds of dazzling celebratory particles)
+ */
 export function triggerFestiveConfetti() {
-  // Burst 1: Golden and coral fireworks from bottom corners
-  const end = Date.now() + 2.5 * 1000;
-  const colors = ['#F59E0B', '#EF4444', '#EC4899', '#3B82F6', '#10B981', '#FBBF24', '#FFFFFF'];
+  const duration = 5.5 * 1000;
+  const animationEnd = Date.now() + duration;
 
-  (function frame() {
+  const vibrantColors = [
+    '#FFD700', // Royal Gold
+    '#FFA500', // Bright Amber/Orange
+    '#FF3366', // Festive Coral Red
+    '#FF007F', // Vivid Pink
+    '#00E5FF', // Electric Cyan
+    '#7C3AED', // Royal Purple
+    '#10B981', // Emerald Green
+    '#FFFFFF', // Sparkling White
+  ];
+
+  // 1. Fullscreen Central Supernova Explosions (Sequential Waves)
+  const burstTimeouts = [0, 400, 1100, 1900, 2800, 3700];
+  burstTimeouts.forEach((delay, idx) => {
+    setTimeout(() => {
+      // Randomized center positions across stage
+      const posX = 0.25 + Math.random() * 0.5;
+      const posY = 0.25 + Math.random() * 0.35;
+
+      // Heavy firework core
+      confetti({
+        particleCount: 120 + idx * 10,
+        spread: 140,
+        startVelocity: 45,
+        ticks: 250,
+        origin: { x: posX, y: posY },
+        colors: vibrantColors,
+        shapes: ['circle', 'square'],
+        scalar: 1.25,
+        disableForReducedMotion: false,
+        zIndex: 9999,
+      });
+
+      // Starburst sparkles
+      confetti({
+        particleCount: 60,
+        spread: 160,
+        startVelocity: 55,
+        ticks: 300,
+        origin: { x: posX, y: posY },
+        colors: ['#FFD700', '#FFFFFF', '#FFA07A', '#00FFFF'],
+        shapes: ['star'],
+        scalar: 1.6,
+        zIndex: 9999,
+      });
+    }, delay);
+  });
+
+  // 2. Dual Side Continuous Celebration Cannons (Shooting arches from bottom corners)
+  (function sideCannons() {
+    // Left bottom cannon shooting up-right
     confetti({
-      particleCount: 4,
+      particleCount: 6,
       angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.8 },
-      colors: colors,
-    });
-    confetti({
-      particleCount: 4,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.8 },
-      colors: colors,
+      spread: 75,
+      startVelocity: 65,
+      ticks: 200,
+      origin: { x: -0.02, y: 0.85 },
+      colors: vibrantColors,
+      scalar: 1.2,
+      zIndex: 9999,
     });
 
-    if (Date.now() < end) {
-      requestAnimationFrame(frame);
+    // Right bottom cannon shooting up-left
+    confetti({
+      particleCount: 6,
+      angle: 120,
+      spread: 75,
+      startVelocity: 65,
+      ticks: 200,
+      origin: { x: 1.02, y: 0.85 },
+      colors: vibrantColors,
+      scalar: 1.2,
+      zIndex: 9999,
+    });
+
+    if (Date.now() < animationEnd) {
+      requestAnimationFrame(sideCannons);
     }
   })();
 
-  // Big central burst
+  // 3. Falling Golden Rain from Top
   setTimeout(() => {
     confetti({
-      particleCount: 80,
-      spread: 100,
-      origin: { y: 0.6 },
-      colors: ['#FFD700', '#FFA500', '#FF69B4', '#00E5FF', '#7C3AED'],
-      disableForReducedMotion: true,
-    });
-  }, 200);
-
-  // Stars and shapes
-  setTimeout(() => {
-    confetti({
-      particleCount: 50,
-      spread: 120,
-      origin: { y: 0.5 },
+      particleCount: 100,
+      spread: 180,
+      startVelocity: 25,
+      ticks: 400,
+      gravity: 0.6,
+      origin: { x: 0.5, y: 0.05 },
+      colors: ['#FFD700', '#FBBF24', '#F59E0B', '#FFFFFF'],
       shapes: ['star', 'circle'],
-      colors: ['#FFD700', '#FFA07A', '#FFFFFF'],
-      scalar: 1.2,
+      scalar: 1.4,
+      zIndex: 9999,
     });
-  }, 600);
+  }, 800);
 }

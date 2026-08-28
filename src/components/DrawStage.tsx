@@ -362,7 +362,7 @@ export const DrawStage: React.FC<DrawStageProps> = ({
 
       {/* Center: Winner Slots Dynamic Area */}
       <div className="w-full flex-1 flex items-center justify-center my-auto py-1 sm:py-2">
-        <div className={`w-full grid gap-3 sm:gap-4 lg:gap-6 ${getGridColsClass(activePrize.winnerCount)}`}>
+        <div className={`w-full grid gap-2.5 sm:gap-3.5 lg:gap-4.5 ${getGridColsClass(activePrize.winnerCount)}`}>
           {Array.from({ length: activePrize.winnerCount }).map((_, idx) => {
             const currentRecord = tierRecords[idx];
             

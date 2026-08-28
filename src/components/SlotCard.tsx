@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, RotateCcw, CheckCircle2, Building2 } from 'lucide-react';
+import { Sparkles, RotateCcw, CheckCircle2, Building2, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DrawType } from '../types';
 import { GroupVerticalReel } from './GroupVerticalReel';
@@ -62,7 +62,9 @@ export const SlotCard: React.FC<SlotCardProps> = ({
   }, [isRolling, drawType, maxNumber]);
 
   const isSingle = totalInTier === 1;
-  const isMedium = totalInTier <= 3;
+  const isTwo = totalInTier === 2;
+  const isThree = totalInTier === 3;
+  const isFourOrFive = totalInTier >= 4;
   const isCompleted =
     (drawType === 'number' && winnerNumber !== null && (!isRolling || revealedDigitsCount >= 3)) ||
     (drawType === 'group' && winnerGroup !== null && !isRolling);
@@ -70,28 +72,69 @@ export const SlotCard: React.FC<SlotCardProps> = ({
   return (
     <motion.div
       id={`slot-card-${index}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.08 }}
-      className={`relative flex flex-col items-center justify-between rounded-2xl transition-all duration-300 ${
-        isSingle
-          ? 'w-full max-w-lg p-6 sm:p-8 bg-gradient-to-b from-white via-amber-50/60 to-orange-50/50 shadow-2xl border-4 border-amber-400/90 ring-8 ring-amber-200/50'
-          : isMedium
-          ? 'w-full p-5 sm:p-6 bg-gradient-to-b from-white via-amber-50/50 to-orange-50/40 shadow-xl border-3 border-amber-300/90 ring-4 ring-amber-200/40'
-          : 'w-full p-4 bg-gradient-to-b from-white to-amber-50/40 shadow-lg border-2 border-amber-200/80'
+      initial={{ opacity: 0, y: 15 }}
+      animate={
+        isCompleted
+          ? {
+              opacity: 1,
+              y: 0,
+              scale: isSingle ? [1, 1.05, 1.02] : isTwo ? [1, 1.03, 1.01] : 1,
+            }
+          : { opacity: 1, y: 0, scale: 1 }
+      }
+      transition={
+        isCompleted
+          ? {
+              duration: 0.5,
+              ease: 'easeOut',
+              times: [0, 0.4, 1],
+            }
+          : { duration: 0.3, delay: index * 0.05 }
+      }
+      className={`relative flex flex-col items-center justify-between rounded-3xl transition-all duration-300 w-full ${
+        isCompleted
+          ? isSingle
+            ? 'max-w-xl p-6 sm:p-8 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-2xl shadow-orange-500/30 border-4 border-amber-400 ring-6 ring-amber-300/60 z-20'
+            : isTwo
+            ? 'p-5 sm:p-6 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-xl shadow-orange-500/25 border-3 border-amber-400 ring-4 ring-amber-300/50 z-20'
+            : isThree
+            ? 'p-3.5 sm:p-4 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-xl shadow-orange-500/20 border-2 border-amber-400 ring-2 ring-amber-300/40 z-20'
+            : 'p-2.5 sm:p-3 bg-gradient-to-b from-amber-50 to-orange-100 shadow-lg shadow-orange-500/20 border-2 border-amber-400 ring-2 ring-amber-300/30 z-20'
+          : isSingle
+          ? 'max-w-lg p-5 sm:p-7 bg-gradient-to-b from-white via-amber-50/60 to-orange-50/50 shadow-xl border-3 border-amber-300/80 ring-4 ring-amber-100'
+          : isTwo
+          ? 'p-4 sm:p-5 bg-gradient-to-b from-white via-amber-50/50 to-orange-50/40 shadow-lg border-2 border-amber-200'
+          : isThree
+          ? 'p-3.5 sm:p-4 bg-gradient-to-b from-white to-stone-50/70 shadow-md border border-amber-200/80'
+          : 'p-2.5 sm:p-3 bg-gradient-to-b from-white to-stone-50/60 shadow-xs border border-stone-200'
       }`}
     >
+      {/* Crown / Trophy Floating Celebration Badge when completed */}
+      {isCompleted && (
+        <motion.div
+          initial={{ scale: 0, rotate: -20, y: 10 }}
+          animate={{ scale: 1, rotate: 0, y: 0 }}
+          transition={{ type: 'spring', damping: 12, stiffness: 400, delay: 0.1 }}
+          className="absolute -top-3.5 -right-2 z-30 flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white font-black text-[11px] sm:text-xs rounded-full shadow-md border-2 border-white"
+        >
+          <Trophy className="w-3 h-3 fill-amber-200 text-amber-200" />
+          <span>축 당첨!</span>
+        </motion.div>
+      )}
+
       {/* Card Header Tag */}
-      <div className="w-full flex items-center justify-between mb-2">
+      <div className="w-full flex items-center justify-between mb-1.5 px-0.5">
         <span
           id={`slot-badge-${index}`}
-          className={`inline-flex items-center gap-1 font-semibold rounded-full ${
-            isSingle
-              ? 'px-4 py-1 text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
-              : 'px-3 py-0.5 text-xs bg-amber-100 text-amber-900 font-medium'
+          className={`inline-flex items-center gap-1 font-bold rounded-full ${
+            isCompleted
+              ? 'px-3 py-0.5 text-xs sm:text-sm bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white shadow-xs'
+              : isSingle
+              ? 'px-3.5 py-1 text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs'
+              : 'px-2.5 py-0.5 text-[11px] sm:text-xs bg-amber-100 text-amber-900 font-semibold'
           }`}
         >
-          {drawType === 'group' ? <Building2 className="w-3.5 h-3.5" /> : <Sparkles className="w-3.5 h-3.5" />}
+          {drawType === 'group' ? <Building2 className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
           {drawType === 'group'
             ? totalInTier > 1
               ? `당첨 단체 ${index + 1}`
@@ -102,9 +145,9 @@ export const SlotCard: React.FC<SlotCardProps> = ({
         </span>
 
         {isCompleted && (
-          <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shadow-xs">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            당첨 확정
+          <span className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-100 px-2 sm:px-2.5 py-0.5 rounded-full border border-emerald-300">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <span>당첨 확정</span>
           </span>
         )}
       </div>
@@ -113,25 +156,47 @@ export const SlotCard: React.FC<SlotCardProps> = ({
       <div
         className={`w-full relative flex items-center justify-center rounded-2xl overflow-hidden select-none transition-all duration-300 ${
           isRolling && (!winnerDigits || revealedDigitsCount < 3)
-            ? 'bg-gradient-to-b from-stone-900 via-amber-950 to-stone-900 text-amber-300 shadow-inner'
+            ? 'bg-gradient-to-b from-stone-900 via-amber-950 to-stone-900 text-amber-300 shadow-inner ring-2 ring-amber-500/50'
             : isCompleted
-            ? 'bg-gradient-to-b from-amber-500 via-orange-500 to-rose-500 text-white shadow-xl shadow-orange-500/25'
+            ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-rose-600 text-white shadow-xl shadow-orange-500/30 ring-2 sm:ring-4 ring-white/60'
             : 'bg-stone-100/90 text-stone-400 border-2 border-dashed border-stone-300'
-        } ${isSingle ? 'min-h-[160px] sm:min-h-[190px] my-3 p-4' : isMedium ? 'min-h-[130px] sm:min-h-[160px] my-2 p-3' : 'min-h-[110px] sm:min-h-[130px] my-1 p-2'}`}
+        } ${
+          isSingle
+            ? 'min-h-[160px] sm:min-h-[200px] my-2 p-3 sm:p-4'
+            : isTwo
+            ? 'min-h-[130px] sm:min-h-[160px] my-1.5 p-2 sm:p-3'
+            : isThree
+            ? 'min-h-[105px] sm:min-h-[130px] my-1 p-2'
+            : 'min-h-[90px] sm:min-h-[110px] my-1 p-1.5'
+        }`}
       >
-        {/* Animated Glow Backdrop */}
-        {isRolling && (
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-400/20 via-transparent to-transparent animate-pulse" />
+        {/* Animated Background Rays on Winner Reveal */}
+        {isCompleted && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-300/40 via-orange-400/20 to-transparent pointer-events-none"
+          />
         )}
 
-        {/* 1. NUMBER DRAW VIEW WITH SEQUENTIAL DIGIT REVEAL (자리수별 순차 공개) */}
+        {/* Animated Glow Backdrop during roll */}
+        {isRolling && (
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-400/25 via-transparent to-transparent animate-pulse" />
+        )}
+
+        {/* 1. NUMBER DRAW VIEW WITH SEQUENTIAL DIGIT REVEAL */}
         {drawType === 'number' && (
-          <div className="relative z-10 flex flex-col items-center justify-center w-full">
-            <span className="text-[10px] sm:text-xs tracking-widest uppercase opacity-80 mb-1 font-medium text-amber-200">
-              LUCKY TICKET NO.
+          <div className="relative z-10 flex flex-col items-center justify-center w-full px-1">
+            <span
+              className={`text-[9px] sm:text-[10px] tracking-wider uppercase mb-0.5 font-bold ${
+                isCompleted ? 'text-amber-100 drop-shadow-xs' : 'text-amber-300/80'
+              }`}
+            >
+              WINNER NUMBER
             </span>
 
-            <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+            <div className="flex items-center justify-center gap-1 sm:gap-2">
               {[0, 1, 2].map((digitIdx) => {
                 // Determine whether this specific digit is locked/revealed
                 const isDigitLocked =
@@ -149,32 +214,39 @@ export const SlotCard: React.FC<SlotCardProps> = ({
                     key={`digit-reel-${index}-${digitIdx}`}
                     animate={
                       isDigitLocked
-                        ? { scale: [1.25, 1], filter: ['brightness(1.4)', 'brightness(1)'] }
+                        ? {
+                            scale: isCompleted ? [1.15, 1] : 1,
+                          }
                         : {}
                     }
-                    transition={{ type: 'spring', stiffness: 500, damping: 18 }}
-                    className={`relative flex items-center justify-center font-black rounded-xl select-none transition-all duration-200 ${
+                    transition={{ type: 'spring', stiffness: 450, damping: 16 }}
+                    className={`relative flex items-center justify-center font-black rounded-xl sm:rounded-2xl select-none transition-all duration-200 shrink-0 ${
                       isDigitLocked
-                        ? 'bg-white/20 text-white border-2 border-white/60 shadow-lg shadow-amber-950/20 ring-2 ring-white/30 backdrop-blur-xs'
+                        ? isCompleted
+                          ? 'bg-white/25 text-white border-2 sm:border-3 border-white/90 shadow-lg shadow-amber-950/30 ring-2 sm:ring-3 ring-yellow-300/50 backdrop-blur-xs'
+                          : 'bg-white/20 text-white border sm:border-2 border-white/60 shadow-md shadow-amber-950/20 ring-1 sm:ring-2 ring-white/30 backdrop-blur-xs'
                         : isRolling
-                        ? 'bg-amber-900/60 text-amber-300 border border-amber-600/40 shadow-inner'
+                        ? 'bg-amber-900/70 text-amber-300 border border-amber-500/50 shadow-inner'
                         : 'bg-stone-200 text-stone-400'
                     } ${
                       isSingle
-                        ? 'w-16 h-24 sm:w-22 sm:h-32 text-5xl sm:text-7xl md:text-8xl'
-                        : isMedium
-                        ? 'w-12 h-18 sm:w-16 sm:h-24 text-4xl sm:text-5xl md:text-6xl'
-                        : 'w-10 h-14 sm:w-12 sm:h-18 text-3xl sm:text-4xl'
+                        ? 'w-16 h-22 sm:w-24 sm:h-32 text-5xl sm:text-7xl md:text-8xl'
+                        : isTwo
+                        ? 'w-13 h-18 sm:w-18 sm:h-24 text-4xl sm:text-5xl md:text-6xl'
+                        : isThree
+                        ? 'w-9 h-14 sm:w-13 sm:h-18 text-3xl sm:text-4xl md:text-5xl'
+                        : 'w-7.5 h-11 sm:w-10 sm:h-15 text-2xl sm:text-3xl md:text-4xl'
                     }`}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
                     <AnimatePresence mode="popLayout">
                       <motion.span
                         key={currentDigitChar + (isDigitLocked ? '-locked' : '-roll')}
-                        initial={{ y: isDigitLocked ? -20 : -10, opacity: 0.7 }}
+                        initial={{ y: isDigitLocked ? -15 : -8, opacity: 0.6 }}
                         animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 20, opacity: 0 }}
+                        exit={{ y: 15, opacity: 0 }}
                         transition={{ duration: 0.08 }}
+                        className="drop-shadow-md"
                       >
                         {currentDigitChar}
                       </motion.span>
@@ -185,8 +257,14 @@ export const SlotCard: React.FC<SlotCardProps> = ({
 
               {/* Unit Tag '번' */}
               <span
-                className={`font-black ml-1 text-white/90 drop-shadow ${
-                  isSingle ? 'text-3xl sm:text-4xl' : isMedium ? 'text-2xl sm:text-3xl' : 'text-xl'
+                className={`font-black ml-0.5 sm:ml-1 text-white drop-shadow-md shrink-0 ${
+                  isSingle
+                    ? 'text-3xl sm:text-5xl'
+                    : isTwo
+                    ? 'text-2xl sm:text-3xl'
+                    : isThree
+                    ? 'text-xl sm:text-2xl'
+                    : 'text-base sm:text-xl'
                 }`}
               >
                 번
@@ -195,28 +273,32 @@ export const SlotCard: React.FC<SlotCardProps> = ({
           </div>
         )}
 
-        {/* 2. GROUP PRIZE VIEW (단체상 기관명 표시 - 위로 계속 올라가는 드롭다운/슬롯 릴 애니메이션) */}
+        {/* 2. GROUP PRIZE VIEW */}
         {drawType === 'group' && (
           <GroupVerticalReel
             candidates={groupCandidates}
             winnerGroup={winnerGroup}
             isRolling={isRolling}
             isSingle={isSingle}
-            isMedium={isMedium}
+            isMedium={isTwo || isThree}
             isCompleted={isCompleted}
             durationMs={rollDurationMs}
           />
         )}
 
-        {/* Shimmer Light Flare on completion */}
+        {/* Dynamic Sweeping Shimmer Light Bar on completion */}
         {isCompleted && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 animate-[shimmer_2s_infinite]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 animate-[shimmer_2s_infinite] pointer-events-none" />
         )}
       </div>
 
       {/* Footer Info / Redraw Action */}
-      <div className="w-full flex items-center justify-between pt-2 border-t border-stone-200/70 mt-1">
-        <span className="text-xs text-stone-500 font-medium truncate max-w-[150px] sm:max-w-[220px]">
+      <div className="w-full flex items-center justify-between pt-1.5 border-t border-stone-200/70 mt-1 px-0.5">
+        <span
+          className={`text-[11px] sm:text-xs font-semibold truncate max-w-[120px] sm:max-w-[180px] ${
+            isCompleted ? 'text-orange-950 font-bold' : 'text-stone-500'
+          }`}
+        >
           {prizeName}
         </span>
 
@@ -230,11 +312,11 @@ export const SlotCard: React.FC<SlotCardProps> = ({
                 onRedrawGroup(index);
               }
             }}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-2 sm:px-2.5 py-0.5 rounded-lg border border-rose-300 shadow-2xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
             title="당첨자가 부재중이거나 취소 시 이 번호/기관만 다시 추첨합니다"
           >
-            <RotateCcw className="w-3 h-3" />
-            재추첨
+            <RotateCcw className="w-3 h-3 text-rose-600" />
+            <span>재추첨</span>
           </button>
         )}
       </div>

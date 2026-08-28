@@ -17,28 +17,38 @@ interface WinnerHistoryModalProps {
 export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
   isOpen,
   onClose,
-  records,
-  prizes,
+  records = [],
+  prizes = [],
   config,
   onCancelRecord,
   onResetAllRecords,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPrizeId, setFilterPrizeId] = useState<string>('ALL');
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
 
   if (!isOpen) return null;
 
-  const validRecords = records.filter((r) => !r.isCancelled);
+  // Safe records array with null guards
+  const safeRecords = Array.isArray(records) ? records : [];
+  const validRecords = safeRecords.filter((r) => r && !r.isCancelled);
 
-  // Filtering
+  // Filtering with comprehensive null safety
   const filteredRecords = validRecords.filter((r) => {
-    const ticketStr = r.ticketNumber !== undefined ? r.ticketNumber.toString() : '';
+    if (!r) return false;
+    const ticketStr = r.ticketNumber !== undefined && r.ticketNumber !== null ? String(r.ticketNumber) : '';
     const groupStr = r.groupName || '';
+    const prizeNameStr = r.prizeName || '';
+    const prizeItemStr = r.prizeItem || '';
+    const q = (searchTerm || '').trim().toLowerCase();
+
     const matchesSearch =
-      ticketStr.includes(searchTerm) ||
-      groupStr.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.prizeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.prizeItem.toLowerCase().includes(searchTerm.toLowerCase());
+      !q ||
+      ticketStr.includes(q) ||
+      groupStr.toLowerCase().includes(q) ||
+      prizeNameStr.toLowerCase().includes(q) ||
+      prizeItemStr.toLowerCase().includes(q);
+
     const matchesPrize = filterPrizeId === 'ALL' || r.prizeId === filterPrizeId;
     return matchesSearch && matchesPrize;
   });
@@ -47,16 +57,34 @@ export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
     window.print();
   };
 
-  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
-
   const handleExportCSV = () => {
     audioEngine.playClick();
-    exportWinnersToCSV(records, config.eventTitle);
+    exportWinnersToCSV(safeRecords, config?.eventTitle || '경품추첨');
+  };
+
+  const formatDrawnTime = (drawnAt?: string) => {
+    if (!drawnAt) return '-';
+    try {
+      const d = new Date(drawnAt);
+      if (isNaN(d.getTime())) return '-';
+      return d.toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    } catch {
+      return '-';
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-      <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-gradient-to-r from-amber-50 to-orange-50">
           <div className="flex items-center gap-3">
@@ -68,7 +96,7 @@ export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
                 경품 추첨 당첨자 명단 및 기록
               </h3>
               <p className="text-xs text-stone-500 font-medium">
-                {config.organization} • {config.eventTitle} (총 당첨 {validRecords.length}건)
+                {config?.organization || '수원시장애인종합복지관'} • {config?.eventTitle || '개관 20주년 기념식'} (총 당첨 {validRecords.length}건)
               </p>
             </div>
           </div>
@@ -117,7 +145,7 @@ export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 bg-white hover:bg-stone-50 border border-stone-300 rounded-xl shadow-xs transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4 text-emerald-600" />
-              <span>CSV 엑셀 다운로드</span>
+              <span className="hidden sm:inline">CSV 엑셀</span>
             </button>
 
             <button
@@ -126,13 +154,13 @@ export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 bg-white hover:bg-stone-50 border border-stone-300 rounded-xl shadow-xs transition-colors cursor-pointer"
             >
               <Printer className="w-4 h-4 text-blue-600" />
-              <span>명단 인쇄</span>
+              <span className="hidden sm:inline">인쇄</span>
             </button>
 
             <button
               id="btn-close-history"
               onClick={onClose}
-              className="p-2 text-stone-400 hover:text-stone-700 rounded-xl hover:bg-stone-100 transition-colors ml-2 cursor-pointer"
+              className="p-2 text-stone-400 hover:text-stone-700 rounded-xl hover:bg-stone-100 transition-colors ml-1 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -160,14 +188,16 @@ export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
               className="px-3 py-1.5 text-xs sm:text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-amber-500 font-medium text-stone-700"
             >
               <option value="ALL">전체 경품 부문 ({validRecords.length}건)</option>
-              {prizes.map((p) => {
-                const count = validRecords.filter((r) => r.prizeId === p.id).length;
-                return (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({count}/{p.winnerCount}{p.drawType === 'group' ? '곳' : '명'})
-                  </option>
-                );
-              })}
+              {Array.isArray(prizes) &&
+                prizes.map((p) => {
+                  if (!p) return null;
+                  const count = validRecords.filter((r) => r.prizeId === p.id).length;
+                  return (
+                    <option key={p.id} value={p.id}>
+                      {p.name || '경품'} ({count}/{p.winnerCount || 1}{p.drawType === 'group' ? '곳' : '명'})
+                    </option>
+                  );
+                })}
             </select>
           </div>
         </div>
@@ -198,47 +228,49 @@ export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
                 <tbody className="divide-y divide-stone-100 font-medium text-stone-700">
                   {filteredRecords.map((record, index) => {
                     const isGroup = record.drawType === 'group' || !!record.groupName;
+                    const prizeNameDisplay = record.prizeName || '경품';
+                    const prizeItemDisplay = record.prizeItem || '-';
 
                     return (
-                      <tr key={record.id} className="hover:bg-amber-50/50 transition-colors">
+                      <tr key={record.id || index} className="hover:bg-amber-50/50 transition-colors">
                         <td className="py-3 px-4 text-center text-xs text-stone-400">
                           {index + 1}
                         </td>
                         <td className="py-3 px-4 font-bold text-orange-700">
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-100/70 text-orange-800 text-xs">
                             {isGroup && <Building2 className="w-3 h-3 text-orange-700" />}
-                            {record.prizeName}
+                            {prizeNameDisplay}
                           </span>
                         </td>
                         <td className="py-3 px-4 font-semibold text-stone-800">
-                          {record.prizeItem}
+                          {prizeItemDisplay}
                         </td>
                         <td className="py-3 px-4 text-center">
                           {isGroup ? (
                             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm rounded-xl shadow-xs">
                               <Building2 className="w-4 h-4 text-amber-200 shrink-0" />
-                              <span>{record.groupName}</span>
+                              <span>{record.groupName || '미지정'}</span>
                             </span>
                           ) : (
                             <span className="inline-block px-3 py-1 bg-amber-500 text-white font-black text-base rounded-xl shadow-xs">
-                              {String(record.ticketNumber).padStart(3, '0')}번
+                              {record.ticketNumber !== undefined && record.ticketNumber !== null
+                                ? `${String(record.ticketNumber).padStart(3, '0')}번`
+                                : '-'}
                             </span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-xs text-stone-500">
-                          {new Date(record.drawnAt).toLocaleTimeString('ko-KR', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                          })}
+                          {formatDrawnTime(record.drawnAt)}
                         </td>
                         <td className="py-3 px-4 text-center">
                           <button
-                            id={`btn-cancel-record-${record.id}`}
+                            id={`btn-cancel-record-${record.id || index}`}
                             onClick={() => {
-                              const targetLabel = isGroup ? record.groupName : `${record.ticketNumber}번`;
+                              const targetLabel = isGroup
+                                ? record.groupName || '기관'
+                                : `${record.ticketNumber}번`;
                               const conf = window.confirm(
-                                `[${record.prizeName}] ${targetLabel} 당첨 기록을 무효화/취소하시겠습니까?`
+                                `[${prizeNameDisplay}] ${targetLabel} 당첨 기록을 무효화/취소하시겠습니까?`
                               );
                               if (conf) {
                                 onCancelRecord(record.id);
@@ -263,7 +295,7 @@ export const WinnerHistoryModal: React.FC<WinnerHistoryModalProps> = ({
         <div className="flex items-center justify-between px-6 py-3 bg-stone-50 border-t border-stone-200 text-xs text-stone-500">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>모든 당첨 데이터는 브라우저 저장소에 안전하게 자동 보관됩니다.</span>
+            <span>모든 당첨 데이터는 브라우저 저장소 및 클라우드에 안전하게 자동 보관됩니다.</span>
           </div>
 
           <button

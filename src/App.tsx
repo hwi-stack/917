@@ -14,6 +14,7 @@ import { DrawStage } from './components/DrawStage';
 import { WinnerHistoryModal } from './components/WinnerHistoryModal';
 import { AdminModal } from './components/AdminModal';
 import { ResetModal } from './components/ResetModal';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { audioEngine } from './utils/audio';
 import {
   subscribeToFirestoreState,
@@ -219,112 +220,114 @@ export default function App() {
   const remainingPrizesCount = prizes.length - completedPrizeIds.size;
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-stone-900 overflow-x-hidden font-sans select-none">
-      {/* 16:9 Aspect Ratio Container for Grand Presentation Stage */}
-      <div className="relative w-full max-w-[1920px] aspect-video max-h-screen min-h-screen sm:min-h-0 flex flex-col justify-between overflow-hidden shadow-2xl bg-gradient-to-b from-amber-50/90 via-orange-50/70 to-rose-50/80">
-        {/* Festive Atmosphere Background */}
-        <BackgroundFestive />
+    <ErrorBoundary>
+      <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-stone-900 overflow-x-hidden font-sans select-none">
+        {/* 16:9 Aspect Ratio Container for Grand Presentation Stage */}
+        <div className="relative w-full max-w-[1920px] aspect-video max-h-screen min-h-screen sm:min-h-0 flex flex-col justify-between overflow-hidden shadow-2xl bg-gradient-to-b from-amber-50/90 via-orange-50/70 to-rose-50/80">
+          {/* Festive Atmosphere Background */}
+          <BackgroundFestive />
 
-        {/* Top Grand Stage Header */}
-        <StageHeader
-          config={config}
-          soundMuted={soundMuted}
-          onToggleSound={handleToggleSound}
-          isFullscreen={isFullscreen}
-          onToggleFullscreen={toggleFullscreen}
-          onOpenHistory={() => setIsHistoryOpen(true)}
-          onOpenAdmin={() => setIsAdminOpen(true)}
-          onOpenReset={() => setIsResetOpen(true)}
-          totalWinnersCount={totalWinnersCount}
-          remainingPrizesCount={remainingPrizesCount}
-          syncStatus={syncStatus}
-        />
-
-        {/* Prize Tiers Selector Bar */}
-        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pt-1">
-          <PrizeSelector
-            prizes={prizes}
-            activePrizeId={activePrize?.id || ''}
-            onSelectPrize={(id) => setActivePrizeId(id)}
-            records={records}
-            isRolling={false}
+          {/* Top Grand Stage Header */}
+          <StageHeader
+            config={config}
+            soundMuted={soundMuted}
+            onToggleSound={handleToggleSound}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={toggleFullscreen}
+            onOpenHistory={() => setIsHistoryOpen(true)}
+            onOpenAdmin={() => setIsAdminOpen(true)}
+            onOpenReset={() => setIsResetOpen(true)}
+            totalWinnersCount={totalWinnersCount}
+            remainingPrizesCount={remainingPrizesCount}
+            syncStatus={syncStatus}
           />
+
+          {/* Prize Tiers Selector Bar */}
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pt-1">
+            <PrizeSelector
+              prizes={prizes}
+              activePrizeId={activePrize?.id || ''}
+              onSelectPrize={(id) => setActivePrizeId(id)}
+              records={records}
+              isRolling={false}
+            />
+          </div>
+
+          {/* Main 16:9 Drawing Stage Area */}
+          {activePrize && (
+            <DrawStage
+              key={activePrize.id}
+              activePrize={activePrize}
+              config={config}
+              records={records}
+              onSaveDrawResults={handleSaveDrawResults}
+              onRedrawSingle={handleRedrawSingle}
+              onResetTierRecords={handleResetTierRecords}
+            />
+          )}
+
+          {/* Bottom Status Footer Strip */}
+          <footer className="relative z-10 w-full px-6 py-2 bg-white/60 backdrop-blur-xs border-t border-amber-200/60 flex items-center justify-between text-xs text-stone-500">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-orange-800">
+                {config.organization} 개관 20주년 기념식
+              </span>
+              <span className="text-stone-400">•</span>
+              <span className="font-medium text-stone-600">
+                &quot;{config.eventTitle}&quot;
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4 text-[11px] font-semibold text-stone-500">
+              <span>추첨 대상 번호: <strong>{config.minNumber}번 ~ {config.maxNumber}번</strong></span>
+              <span>중복 당첨 방지: <strong className="text-emerald-700">{config.allowDuplicates ? '비활성' : '적용 중'}</strong></span>
+              <span>클라우드 동기화: <strong className="text-orange-700">Firebase Firestore</strong></span>
+              <span>화면 비율: <strong>16:9 대화면 무대 모드</strong></span>
+            </div>
+          </footer>
         </div>
 
-        {/* Main 16:9 Drawing Stage Area */}
+        {/* Winner History Modal */}
+        <WinnerHistoryModal
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+          records={records}
+          prizes={prizes}
+          config={config}
+          onCancelRecord={handleCancelRecord}
+          onResetAllRecords={handleResetAllRecords}
+        />
+
+        {/* Quick Reset Modal */}
         {activePrize && (
-          <DrawStage
-            key={activePrize.id}
+          <ResetModal
+            isOpen={isResetOpen}
+            onClose={() => setIsResetOpen(false)}
             activePrize={activePrize}
-            config={config}
             records={records}
-            onSaveDrawResults={handleSaveDrawResults}
-            onRedrawSingle={handleRedrawSingle}
-            onResetTierRecords={handleResetTierRecords}
+            onResetAllRecords={handleResetAllRecords}
+            onResetCurrentTier={handleResetTierRecords}
+            onFactoryReset={handleFactoryReset}
           />
         )}
 
-        {/* Bottom Status Footer Strip */}
-        <footer className="relative z-10 w-full px-6 py-2 bg-white/60 backdrop-blur-xs border-t border-amber-200/60 flex items-center justify-between text-xs text-stone-500">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-orange-800">
-              {config.organization} 개관 20주년 기념식
-            </span>
-            <span className="text-stone-400">•</span>
-            <span className="font-medium text-stone-600">
-              &quot;{config.eventTitle}&quot;
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4 text-[11px] font-semibold text-stone-500">
-            <span>추첨 대상 번호: <strong>{config.minNumber}번 ~ {config.maxNumber}번</strong></span>
-            <span>중복 당첨 방지: <strong className="text-emerald-700">{config.allowDuplicates ? '비활성' : '적용 중'}</strong></span>
-            <span>클라우드 동기화: <strong className="text-orange-700">Firebase Firestore</strong></span>
-            <span>화면 비율: <strong>16:9 대화면 무대 모드</strong></span>
-          </div>
-        </footer>
-      </div>
-
-      {/* Winner History Modal */}
-      <WinnerHistoryModal
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        records={records}
-        prizes={prizes}
-        config={config}
-        onCancelRecord={handleCancelRecord}
-        onResetAllRecords={handleResetAllRecords}
-      />
-
-      {/* Quick Reset Modal */}
-      {activePrize && (
-        <ResetModal
-          isOpen={isResetOpen}
-          onClose={() => setIsResetOpen(false)}
-          activePrize={activePrize}
+        {/* Admin Settings Modal (Password: 0926) */}
+        <AdminModal
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
+          config={config}
+          prizes={prizes}
           records={records}
+          onSaveConfig={(newConfig) => setConfig(newConfig)}
+          onSavePrizes={(newPrizes) => {
+            setPrizes(newPrizes);
+            if (!newPrizes.some((p) => p.id === activePrizeId) && newPrizes.length > 0) {
+              setActivePrizeId(newPrizes[0].id);
+            }
+          }}
           onResetAllRecords={handleResetAllRecords}
-          onResetCurrentTier={handleResetTierRecords}
-          onFactoryReset={handleFactoryReset}
         />
-      )}
-
-      {/* Admin Settings Modal (Password: 0926) */}
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        config={config}
-        prizes={prizes}
-        records={records}
-        onSaveConfig={(newConfig) => setConfig(newConfig)}
-        onSavePrizes={(newPrizes) => {
-          setPrizes(newPrizes);
-          if (!newPrizes.some((p) => p.id === activePrizeId) && newPrizes.length > 0) {
-            setActivePrizeId(newPrizes[0].id);
-          }
-        }}
-        onResetAllRecords={handleResetAllRecords}
-      />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }
