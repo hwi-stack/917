@@ -1,0 +1,6 @@
+{
+  "name": "스무 살, 더 밝게 빛날 우리 - 기념식 경품 추첨기",
+  "description": "수원시장애인종합복지관 기념식 16:9 대형 무대 전용 경품 추첨 시스템 (동시 다수 추첨, 롤링 애니메이션, 긴장감 효과음, 관리자 설정 및 결과 저장)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

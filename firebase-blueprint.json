@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "LotteryState": {
+      "collection": "lottery_state",
+      "fields": {
+        "config": {
+          "type": "map",
+          "required": true,
+          "description": "Global lottery settings including number range, roll duration, sound, and event title"
+        },
+        "prizes": {
+          "type": "array",
+          "required": true,
+          "description": "List of prize tiers with draw type (number/group) and candidate names"
+        },
+        "records": {
+          "type": "array",
+          "required": true,
+          "description": "All past and current drawn winner records with ticket numbers and group names"
+        },
+        "activePrizeId": {
+          "type": "string",
+          "required": true,
+          "description": "Currently selected prize tier ID on stage"
+        },
+        "updatedAt": {
+          "type": "string",
+          "required": true,
+          "description": "Last ISO timestamp when the state was updated"
+        }
+      }
+    }
+  }
+}
