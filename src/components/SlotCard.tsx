@@ -18,6 +18,7 @@ interface SlotCardProps {
   onRedrawGroup?: (index: number) => void;
   prizeName: string;
   totalInTier: number;
+  rollDurationMs?: number;
 }
 
 export const SlotCard: React.FC<SlotCardProps> = ({
@@ -34,10 +35,10 @@ export const SlotCard: React.FC<SlotCardProps> = ({
   onRedrawGroup,
   prizeName,
   totalInTier,
+  rollDurationMs = 7300,
 }) => {
   // Rolling random states
   const [randomDigits, setRandomDigits] = useState<string[]>(['0', '0', '0']);
-  const [randomGroupName, setRandomGroupName] = useState<string>('추첨 대기 중');
 
   // Format winner number as 3 digits string array e.g. ['2', '4', '6']
   const winnerDigits = winnerNumber !== null ? String(winnerNumber).padStart(3, '0').split('') : null;
@@ -45,29 +46,20 @@ export const SlotCard: React.FC<SlotCardProps> = ({
   useEffect(() => {
     let interval: number;
 
-    if (isRolling) {
+    if (isRolling && drawType === 'number') {
       interval = window.setInterval(() => {
-        if (drawType === 'number') {
-          const maxHundreds = Math.floor(maxNumber / 100);
-          const r0 = String(Math.floor(Math.random() * (maxHundreds + 1)));
-          const r1 = String(Math.floor(Math.random() * 10));
-          const r2 = String(Math.floor(Math.random() * 10));
-          setRandomDigits([r0, r1, r2]);
-        } else {
-          if (groupCandidates.length > 0) {
-            const rand = groupCandidates[Math.floor(Math.random() * groupCandidates.length)];
-            setRandomGroupName(rand);
-          } else {
-            setRandomGroupName('단체 기관 추첨 중...');
-          }
-        }
+        const maxHundreds = Math.floor(maxNumber / 100);
+        const r0 = String(Math.floor(Math.random() * (maxHundreds + 1)));
+        const r1 = String(Math.floor(Math.random() * 10));
+        const r2 = String(Math.floor(Math.random() * 10));
+        setRandomDigits([r0, r1, r2]);
       }, 50);
     }
 
     return () => {
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
-  }, [isRolling, drawType, maxNumber, groupCandidates]);
+  }, [isRolling, drawType, maxNumber]);
 
   const isSingle = totalInTier === 1;
   const isMedium = totalInTier <= 3;
@@ -212,6 +204,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({
             isSingle={isSingle}
             isMedium={isMedium}
             isCompleted={isCompleted}
+            durationMs={rollDurationMs}
           />
         )}
 

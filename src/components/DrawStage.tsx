@@ -400,6 +400,7 @@ export const DrawStage: React.FC<DrawStageProps> = ({
                 onRedrawGroup={() => handleRedrawSingle(idx)}
                 prizeName={activePrize.prizeName}
                 totalInTier={activePrize.winnerCount}
+                rollDurationMs={drawType === 'group' ? 7300 : undefined}
               />
             );
           })}
