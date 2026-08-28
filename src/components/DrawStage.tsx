@@ -131,7 +131,7 @@ export const DrawStage: React.FC<DrawStageProps> = ({
       setShowCelebrateBanner(false);
 
       const rollSec = config.rollDurationSeconds || 3;
-      audioEngine.startSuspense(rollSec + 2.5);
+      audioEngine.startSuspense(rollSec + 2.5, false);
 
       // Phase 1: Fast initial roll duration (e.g. 2.5s)
       const t1 = window.setTimeout(() => {
@@ -186,8 +186,9 @@ export const DrawStage: React.FC<DrawStageProps> = ({
       setIsRolling(true);
       setShowCelebrateBanner(false);
 
-      const rollSec = Math.max(4.2, config.rollDurationSeconds || 4.2);
-      audioEngine.startSuspense(rollSec);
+      // Group draw: extended by ~3.0 seconds (Total ~7.3s for grand tension deceleration)
+      const rollSec = Math.max(7.3, (config.rollDurationSeconds || 4.2) + 3.1);
+      audioEngine.startSuspense(rollSec, true);
 
       const t1 = window.setTimeout(() => {
         setIsRolling(false);
@@ -286,7 +287,7 @@ export const DrawStage: React.FC<DrawStageProps> = ({
         return { ...prev, groups: currentGrps };
       });
       setIsRolling(true);
-      audioEngine.startSuspense(4.0);
+      audioEngine.startSuspense(7.3, true);
 
       const t1 = window.setTimeout(() => {
         setIsRolling(false);
@@ -299,7 +300,7 @@ export const DrawStage: React.FC<DrawStageProps> = ({
           { groupName: oldGroup },
           { groupName: newGroup }
         );
-      }, 4000);
+      }, 7300);
 
       timerRefs.current.push(t1);
     }
