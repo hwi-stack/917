@@ -130,21 +130,22 @@ export const DrawStage: React.FC<DrawStageProps> = ({
       setRevealedDigitsCount(0);
       setShowCelebrateBanner(false);
 
-      const rollSec = config.rollDurationSeconds || 3;
-      audioEngine.startSuspense(rollSec + 2.5, false);
+      // Fast & lively draw duration for number tiers (1등~5등): Total ~2.35s
+      const initialRollSec = 1.4;
+      audioEngine.startSuspense(initialRollSec + 0.95, false);
 
-      // Phase 1: Fast initial roll duration (e.g. 2.5s)
+      // Phase 1: Fast initial roll duration (1.4s)
       const t1 = window.setTimeout(() => {
         // Step 1: Reveal Hundreds Digit (백의 자리)
         setRevealedDigitsCount(1);
         audioEngine.playDigitLock(0, 3);
 
-        // Step 2: Reveal Tens Digit (십의 자리) after 800ms
+        // Step 2: Reveal Tens Digit (십의 자리) quickly after 450ms
         const t2 = window.setTimeout(() => {
           setRevealedDigitsCount(2);
           audioEngine.playDigitLock(1, 3);
 
-          // Step 3: Reveal Units Digit (일의 자리 - 최종 당첨!) after 850ms
+          // Step 3: Reveal Units Digit (일의 자리 - 최종 당첨!) after 500ms
           const t3 = window.setTimeout(() => {
             setRevealedDigitsCount(3);
             setIsRolling(false);
@@ -157,11 +158,11 @@ export const DrawStage: React.FC<DrawStageProps> = ({
               activePrize.id,
               selectedWinners.map((num) => ({ ticketNumber: num }))
             );
-          }, 850);
+          }, 500);
           timerRefs.current.push(t3);
-        }, 800);
+        }, 450);
         timerRefs.current.push(t2);
-      }, rollSec * 1000);
+      }, initialRollSec * 1000);
 
       timerRefs.current.push(t1);
     } else {
@@ -236,7 +237,7 @@ export const DrawStage: React.FC<DrawStageProps> = ({
 
       setIsRolling(true);
       setRevealedDigitsCount(0);
-      audioEngine.startSuspense(4.0);
+      audioEngine.startSuspense(1.8, false);
 
       const t1 = window.setTimeout(() => {
         setRevealedDigitsCount(1);
@@ -259,11 +260,11 @@ export const DrawStage: React.FC<DrawStageProps> = ({
               { ticketNumber: oldNumber },
               { ticketNumber: newNumber }
             );
-          }, 800);
+          }, 450);
           timerRefs.current.push(t3);
-        }, 750);
+        }, 400);
         timerRefs.current.push(t2);
-      }, 1800);
+      }, 900);
 
       timerRefs.current.push(t1);
     } else {
