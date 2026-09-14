@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, RotateCcw, CheckCircle2, Building2, Trophy } from 'lucide-react';
+import { Sparkles, RotateCcw, CheckCircle2, Building2, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DrawType } from '../types';
 import { GroupVerticalReel } from './GroupVerticalReel';
@@ -17,6 +17,7 @@ interface SlotCardProps {
   onRedrawNumber?: (index: number) => void;
   onRedrawGroup?: (index: number) => void;
   prizeName: string;
+  itemLabel?: string; // Specific item for this slot e.g. "에어프라이기", "믹서기"
   totalInTier: number;
   rollDurationMs?: number;
 }
@@ -34,8 +35,9 @@ export const SlotCard: React.FC<SlotCardProps> = ({
   onRedrawNumber,
   onRedrawGroup,
   prizeName,
+  itemLabel,
   totalInTier,
-  rollDurationMs = 7300,
+  rollDurationMs = 7000,
 }) => {
   // Rolling random states
   const [randomDigits, setRandomDigits] = useState<string[]>(['0', '0', '0']);
@@ -64,7 +66,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({
   const isSingle = totalInTier === 1;
   const isTwo = totalInTier === 2;
   const isThree = totalInTier === 3;
-  const isFourOrFive = totalInTier >= 4;
+  const isLargeTier = totalInTier >= 7; // e.g. 11 winners
   const isCompleted =
     (drawType === 'number' && winnerNumber !== null && (!isRolling || revealedDigitsCount >= 3)) ||
     (drawType === 'group' && winnerGroup !== null && !isRolling);
@@ -89,63 +91,74 @@ export const SlotCard: React.FC<SlotCardProps> = ({
               ease: 'easeOut',
               times: [0, 0.4, 1],
             }
-          : { duration: 0.3, delay: index * 0.05 }
+          : { duration: 0.3, delay: index * 0.04 }
       }
       className={`relative flex flex-col items-center justify-between rounded-3xl transition-all duration-300 w-full ${
         isCompleted
           ? isSingle
-            ? 'max-w-xl p-6 sm:p-8 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-2xl shadow-orange-500/30 border-4 border-amber-400 ring-6 ring-amber-300/60 z-20'
+            ? 'max-w-3xl sm:max-w-4xl p-6 sm:p-10 lg:p-12 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-2xl shadow-orange-500/30 border-4 border-amber-400 ring-6 ring-amber-300/60 z-20'
             : isTwo
-            ? 'p-5 sm:p-6 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-xl shadow-orange-500/25 border-3 border-amber-400 ring-4 ring-amber-300/50 z-20'
+            ? 'p-5 sm:p-7 lg:p-8 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-xl shadow-orange-500/25 border-3 sm:border-4 border-amber-400 ring-4 ring-amber-300/50 z-20'
             : isThree
-            ? 'p-3.5 sm:p-4 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-xl shadow-orange-500/20 border-2 border-amber-400 ring-2 ring-amber-300/40 z-20'
+            ? 'p-4 sm:p-5 bg-gradient-to-b from-amber-50 via-orange-50 to-amber-100 shadow-xl shadow-orange-500/20 border-2 sm:border-3 border-amber-400 ring-3 ring-amber-300/40 z-20'
+            : isLargeTier
+            ? 'p-1.5 sm:p-2 md:p-2.5 rounded-2xl bg-gradient-to-b from-amber-50 to-orange-100 shadow-md shadow-orange-500/15 border-2 border-amber-400 ring-1 ring-amber-300/30 z-20'
             : 'p-2.5 sm:p-3 bg-gradient-to-b from-amber-50 to-orange-100 shadow-lg shadow-orange-500/20 border-2 border-amber-400 ring-2 ring-amber-300/30 z-20'
           : isSingle
-          ? 'max-w-lg p-5 sm:p-7 bg-gradient-to-b from-white via-amber-50/60 to-orange-50/50 shadow-xl border-3 border-amber-300/80 ring-4 ring-amber-100'
+          ? 'max-w-3xl sm:max-w-4xl p-6 sm:p-9 lg:p-10 bg-gradient-to-b from-white via-amber-50/60 to-orange-50/50 shadow-xl border-3 border-amber-300/80 ring-4 ring-amber-100'
           : isTwo
-          ? 'p-4 sm:p-5 bg-gradient-to-b from-white via-amber-50/50 to-orange-50/40 shadow-lg border-2 border-amber-200'
+          ? 'p-5 sm:p-6 lg:p-7 bg-gradient-to-b from-white via-amber-50/50 to-orange-50/40 shadow-lg border-2 sm:border-3 border-amber-200'
           : isThree
           ? 'p-3.5 sm:p-4 bg-gradient-to-b from-white to-stone-50/70 shadow-md border border-amber-200/80'
+          : isLargeTier
+          ? 'p-1.5 sm:p-2 md:p-2.5 rounded-2xl bg-gradient-to-b from-white to-stone-50/60 shadow-2xs border border-stone-200'
           : 'p-2.5 sm:p-3 bg-gradient-to-b from-white to-stone-50/60 shadow-xs border border-stone-200'
       }`}
     >
-      {/* Crown / Trophy Floating Celebration Badge when completed */}
-      {isCompleted && (
-        <motion.div
-          initial={{ scale: 0, rotate: -20, y: 10 }}
-          animate={{ scale: 1, rotate: 0, y: 0 }}
-          transition={{ type: 'spring', damping: 12, stiffness: 400, delay: 0.1 }}
-          className="absolute -top-3.5 -right-2 z-30 flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white font-black text-[11px] sm:text-xs rounded-full shadow-md border-2 border-white"
-        >
-          <Trophy className="w-3 h-3 fill-amber-200 text-amber-200" />
-          <span>축 당첨!</span>
-        </motion.div>
-      )}
-
       {/* Card Header Tag */}
-      <div className="w-full flex items-center justify-between mb-1.5 px-0.5">
-        <span
-          id={`slot-badge-${index}`}
-          className={`inline-flex items-center gap-1 font-bold rounded-full ${
-            isCompleted
-              ? 'px-3 py-0.5 text-xs sm:text-sm bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white shadow-xs'
-              : isSingle
-              ? 'px-3.5 py-1 text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs'
-              : 'px-2.5 py-0.5 text-[11px] sm:text-xs bg-amber-100 text-amber-900 font-semibold'
-          }`}
-        >
-          {drawType === 'group' ? <Building2 className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
-          {drawType === 'group'
-            ? totalInTier > 1
-              ? `당첨 단체 ${index + 1}`
-              : '당첨 단체'
-            : totalInTier > 1
-            ? `당첨자 ${index + 1}`
-            : '당첨자'}
-        </span>
+      <div className="w-full flex items-center justify-between mb-1 px-0.5">
+        {itemLabel ? (
+          <span
+            id={`slot-badge-${index}`}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1 text-xs sm:text-sm font-black rounded-full bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white shadow-md ring-2 ring-amber-300/60 tracking-tight"
+          >
+            <Gift className="w-3.5 h-3.5 text-yellow-200 shrink-0" />
+            <span>{itemLabel}</span>
+          </span>
+        ) : (
+          <span
+            id={`slot-badge-${index}`}
+            className={`inline-flex items-center gap-1 font-bold rounded-full ${
+              isCompleted
+                ? isSingle
+                  ? 'px-3.5 py-1 text-xs sm:text-sm bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white shadow-xs'
+                  : 'px-2.5 sm:px-3 py-0.5 text-xs sm:text-sm bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 text-white shadow-xs'
+                : isSingle
+                ? 'px-3.5 py-1 text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs'
+                : isLargeTier
+                ? 'px-2 py-0.5 text-[10px] sm:text-xs bg-amber-100 text-amber-900 font-bold'
+                : 'px-2.5 py-0.5 text-[11px] sm:text-xs bg-amber-100 text-amber-900 font-semibold'
+            }`}
+          >
+            {drawType === 'group' ? <Building2 className="w-3 h-3" /> : <Sparkles className="w-3 h-3" />}
+            {drawType === 'group'
+              ? totalInTier > 1
+                ? `당첨 단체 ${index + 1}`
+                : '당첨 단체'
+              : totalInTier > 1
+              ? `당첨자 ${index + 1}`
+              : '당첨자'}
+          </span>
+        )}
 
         {isCompleted && (
-          <span className="flex items-center gap-1 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-100 px-2 sm:px-2.5 py-0.5 rounded-full border border-emerald-300">
+          <span
+            className={`flex items-center gap-1 font-bold text-emerald-700 bg-emerald-100 rounded-full border border-emerald-300 ${
+              isLargeTier
+                ? 'px-1.5 py-0 text-[10px]'
+                : 'px-2 sm:px-2.5 py-0.5 text-[11px] sm:text-xs'
+            }`}
+          >
             <CheckCircle2 className="w-3 h-3 text-emerald-600" />
             <span>당첨 확정</span>
           </span>
@@ -162,12 +175,14 @@ export const SlotCard: React.FC<SlotCardProps> = ({
             : 'bg-stone-100/90 text-stone-400 border-2 border-dashed border-stone-300'
         } ${
           isSingle
-            ? 'min-h-[160px] sm:min-h-[200px] my-2 p-3 sm:p-4'
+            ? 'min-h-[190px] sm:min-h-[230px] lg:min-h-[260px] my-2 p-3 sm:p-6'
             : isTwo
-            ? 'min-h-[130px] sm:min-h-[160px] my-1.5 p-2 sm:p-3'
+            ? 'min-h-[150px] sm:min-h-[190px] lg:min-h-[210px] my-1.5 p-2.5 sm:p-4'
             : isThree
-            ? 'min-h-[105px] sm:min-h-[130px] my-1 p-2'
-            : 'min-h-[90px] sm:min-h-[110px] my-1 p-1.5'
+            ? 'min-h-[110px] sm:min-h-[140px] my-1 p-2 sm:p-3'
+            : isLargeTier
+            ? 'min-h-[78px] sm:min-h-[88px] md:min-h-[98px] lg:min-h-[108px] my-0.5 p-1 sm:p-1.5'
+            : 'min-h-[85px] sm:min-h-[105px] my-1 p-1.5'
         }`}
       >
         {/* Animated Background Rays on Winner Reveal */}
@@ -188,15 +203,26 @@ export const SlotCard: React.FC<SlotCardProps> = ({
         {/* 1. NUMBER DRAW VIEW WITH SEQUENTIAL DIGIT REVEAL */}
         {drawType === 'number' && (
           <div className="relative z-10 flex flex-col items-center justify-center w-full px-1">
-            <span
-              className={`text-[9px] sm:text-[10px] tracking-wider uppercase mb-0.5 font-bold ${
-                isCompleted ? 'text-amber-100 drop-shadow-xs' : 'text-amber-300/80'
-              }`}
-            >
-              WINNER NUMBER
-            </span>
+            {/* Prominent Per-Slot Item Badge directly ABOVE the numbers (for 4등: 에어프라이기, 믹서기) */}
+            {itemLabel && (
+              <motion.div
+                initial={{ scale: 0.88, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-xl font-black mb-2 shadow-md border transition-all ${
+                  isCompleted
+                    ? 'bg-amber-950/70 text-amber-100 border-amber-300 ring-2 ring-amber-300/50 px-4 sm:px-5 py-1 sm:py-1.5 text-sm sm:text-base md:text-lg'
+                    : isRolling
+                    ? 'bg-amber-900/80 text-amber-200 border-amber-400 ring-2 ring-amber-400/40 px-4 sm:px-5 py-1 sm:py-1.5 text-sm sm:text-base md:text-lg'
+                    : 'bg-white text-stone-900 border-amber-400 ring-2 ring-amber-300/50 px-4 sm:px-5 py-1 sm:py-1.5 text-sm sm:text-base md:text-lg'
+                }`}
+              >
+                <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0" />
+                <span className="tracking-tight font-black">{itemLabel}</span>
+              </motion.div>
+            )}
 
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
+            {/* 3-Digit Containers */}
+            <div className={`flex items-center justify-center ${isLargeTier ? 'gap-0.5 sm:gap-1 md:gap-1.5' : 'gap-1 sm:gap-2'} max-w-full overflow-hidden`}>
               {[0, 1, 2].map((digitIdx) => {
                 // Determine whether this specific digit is locked/revealed
                 const isDigitLocked =
@@ -230,12 +256,14 @@ export const SlotCard: React.FC<SlotCardProps> = ({
                         : 'bg-stone-200 text-stone-400'
                     } ${
                       isSingle
-                        ? 'w-16 h-22 sm:w-24 sm:h-32 text-5xl sm:text-7xl md:text-8xl'
+                        ? 'w-20 h-28 sm:w-32 sm:h-44 md:w-36 md:h-48 text-6xl sm:text-8xl md:text-9xl'
                         : isTwo
-                        ? 'w-13 h-18 sm:w-18 sm:h-24 text-4xl sm:text-5xl md:text-6xl'
+                        ? 'w-16 h-22 sm:w-24 sm:h-34 md:w-28 md:h-38 text-5xl sm:text-7xl md:text-8xl'
                         : isThree
-                        ? 'w-9 h-14 sm:w-13 sm:h-18 text-3xl sm:text-4xl md:text-5xl'
-                        : 'w-7.5 h-11 sm:w-10 sm:h-15 text-2xl sm:text-3xl md:text-4xl'
+                        ? 'w-11 h-16 sm:w-16 sm:h-24 md:w-20 md:h-28 text-4xl sm:text-5xl md:text-6xl'
+                        : isLargeTier
+                        ? 'w-8 h-11 sm:w-9 sm:h-13 md:w-10 md:h-14 lg:w-11 lg:h-15 xl:w-12 xl:h-16 text-xl sm:text-2xl md:text-2xl lg:text-3xl xl:text-3xl rounded-lg sm:rounded-xl'
+                        : 'w-8 h-12 sm:w-11 sm:h-16 md:w-13 md:h-18 text-2xl sm:text-3xl md:text-4xl'
                     }`}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
                   >
@@ -246,7 +274,7 @@ export const SlotCard: React.FC<SlotCardProps> = ({
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 15, opacity: 0 }}
                         transition={{ duration: 0.08 }}
-                        className="drop-shadow-md"
+                        className="drop-shadow-md leading-none flex items-center justify-center"
                       >
                         {currentDigitChar}
                       </motion.span>
@@ -257,19 +285,33 @@ export const SlotCard: React.FC<SlotCardProps> = ({
 
               {/* Unit Tag '번' */}
               <span
-                className={`font-black ml-0.5 sm:ml-1 text-white drop-shadow-md shrink-0 ${
+                className={`font-black ml-0.5 sm:ml-1 text-white drop-shadow-md shrink-0 leading-none ${
                   isSingle
-                    ? 'text-3xl sm:text-5xl'
+                    ? 'text-4xl sm:text-6xl md:text-7xl'
                     : isTwo
-                    ? 'text-2xl sm:text-3xl'
+                    ? 'text-3xl sm:text-5xl md:text-6xl'
                     : isThree
-                    ? 'text-xl sm:text-2xl'
+                    ? 'text-2xl sm:text-4xl'
+                    : isLargeTier
+                    ? 'text-xs sm:text-sm md:text-base lg:text-lg'
                     : 'text-base sm:text-xl'
                 }`}
               >
                 번
               </span>
             </div>
+
+            {/* When drawn, clearly confirm which item this number won */}
+            {itemLabel && isCompleted && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2.5 inline-flex items-center gap-1.5 px-3.5 py-0.5 rounded-full bg-black/40 border border-white/30 text-amber-200 font-extrabold text-xs sm:text-sm tracking-tight shadow-sm"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{itemLabel} 당첨!</span>
+              </motion.div>
+            )}
           </div>
         )}
 
@@ -292,17 +334,9 @@ export const SlotCard: React.FC<SlotCardProps> = ({
         )}
       </div>
 
-      {/* Footer Info / Redraw Action */}
-      <div className="w-full flex items-center justify-between pt-1.5 border-t border-stone-200/70 mt-1 px-0.5">
-        <span
-          className={`text-[11px] sm:text-xs font-semibold truncate max-w-[120px] sm:max-w-[180px] ${
-            isCompleted ? 'text-orange-950 font-bold' : 'text-stone-500'
-          }`}
-        >
-          {prizeName}
-        </span>
-
-        {isCompleted && (
+      {/* Redraw Action Button (ONLY when completed, no small text underneath) */}
+      {isCompleted && (
+        <div className="w-full flex items-center justify-end pt-0.5 mt-0.5 px-0.5">
           <button
             id={`btn-redraw-${index}`}
             onClick={() => {
@@ -312,14 +346,14 @@ export const SlotCard: React.FC<SlotCardProps> = ({
                 onRedrawGroup(index);
               }
             }}
-            className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-2 sm:px-2.5 py-0.5 rounded-lg border border-rose-300 shadow-2xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-2 py-0.5 rounded-lg border border-rose-300 shadow-2xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
             title="당첨자가 부재중이거나 취소 시 이 번호/기관만 다시 추첨합니다"
           >
             <RotateCcw className="w-3 h-3 text-rose-600" />
             <span>재추첨</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </motion.div>
   );
 };

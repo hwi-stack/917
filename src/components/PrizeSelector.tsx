@@ -1,6 +1,6 @@
 import React from 'react';
 import { PrizeTier, DrawRecord } from '../types';
-import { Gift, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Gift, Check, Building2 } from 'lucide-react';
 import { audioEngine } from '../utils/audio';
 
 interface PrizeSelectorProps {
@@ -18,44 +18,19 @@ export const PrizeSelector: React.FC<PrizeSelectorProps> = ({
   records,
   isRolling,
 }) => {
-  const currentIndex = prizes.findIndex((p) => p.id === activePrizeId);
-
-  const handlePrev = () => {
-    if (currentIndex > 0 && !isRolling) {
-      audioEngine.playClick();
-      onSelectPrize(prizes[currentIndex - 1].id);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < prizes.length - 1 && !isRolling) {
-      audioEngine.playClick();
-      onSelectPrize(prizes[currentIndex + 1].id);
-    }
-  };
-
   return (
-    <div className="w-full flex items-center justify-between gap-2 px-2 py-1">
-      {/* Prev Tier Button */}
-      <button
-        id="btn-prev-tier"
-        onClick={handlePrev}
-        disabled={currentIndex <= 0 || isRolling}
-        className="shrink-0 p-2 rounded-xl bg-white/80 hover:bg-white text-stone-700 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm border border-stone-200/80 transition-all"
-        title="이전 경품 부문"
-      >
-        <ChevronLeft className="w-5 h-5" />
-      </button>
-
-      {/* Horizontal Scrollable Tabs */}
-      <div className="flex-1 flex items-center justify-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-1">
-        {prizes.map((prize, idx) => {
+    <div className="w-full py-0.5 sm:py-1 shrink-0">
+      {/* All tiers displayed in a single unified bar at a glance (no arrows needed) */}
+      <div className="w-full flex flex-wrap sm:flex-nowrap items-stretch justify-center gap-1 sm:gap-1.5 md:gap-2">
+        {prizes.map((prize) => {
           const isActive = prize.id === activePrizeId;
           const tierRecords = records.filter(
             (r) => r.prizeId === prize.id && !r.isCancelled
           );
           const isCompleted = tierRecords.length >= prize.winnerCount;
           const isPartial = tierRecords.length > 0 && !isCompleted;
+
+          const isGroup = prize.drawType === 'group';
 
           return (
             <button
@@ -68,56 +43,79 @@ export const PrizeSelector: React.FC<PrizeSelectorProps> = ({
                 }
               }}
               disabled={isRolling}
-              className={`group relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl transition-all duration-200 whitespace-nowrap cursor-pointer select-none ${
+              title={`${prize.name} (${prize.prizeName || ''}) - ${prize.winnerCount}${isGroup ? '곳' : '명'}`}
+              className={`group relative flex-1 min-w-[calc(25%-0.375rem)] sm:min-w-0 flex flex-col items-center justify-center px-1 sm:px-2 md:px-2.5 py-1 sm:py-1.5 rounded-xl transition-all duration-150 cursor-pointer select-none text-center ${
                 isActive
-                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-lg shadow-orange-500/25 ring-2 ring-amber-300 scale-105 z-10'
+                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-amber-300 scale-102 z-10'
                   : isCompleted
-                  ? 'bg-emerald-50/90 text-emerald-800 border border-emerald-300 hover:bg-emerald-100'
-                  : 'bg-white/85 text-stone-700 hover:bg-white border border-stone-200 shadow-sm'
+                  ? 'bg-emerald-50/95 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 hover:border-emerald-400'
+                  : 'bg-white/90 text-stone-700 hover:bg-white border border-stone-200 shadow-2xs hover:border-amber-300'
               }`}
             >
-              <div className="flex items-center gap-1.5 font-bold text-sm sm:text-base">
-                <Gift className={`w-4 h-4 ${isActive ? 'text-amber-200' : 'text-amber-500'}`} />
-                <span>{prize.name}</span>
-              </div>
+              {/* Top: Tier Name & Count Pill */}
+              <div className="flex items-center justify-center gap-1 sm:gap-1.5 w-full">
+                {isGroup ? (
+                  <Building2
+                    className={`w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 ${
+                      isActive ? 'text-amber-200' : isCompleted ? 'text-emerald-600' : 'text-amber-500'
+                    }`}
+                  />
+                ) : (
+                  <Gift
+                    className={`w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0 ${
+                      isActive ? 'text-amber-200' : isCompleted ? 'text-emerald-600' : 'text-amber-500'
+                    }`}
+                  />
+                )}
+                <span className="font-extrabold text-xs sm:text-sm md:text-sm tracking-tight truncate">
+                  {prize.name}
+                </span>
 
-              {/* Status Badge */}
-              <div className="flex items-center gap-1">
                 <span
-                  className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold ${
+                  className={`text-[9px] sm:text-[10px] md:text-[11px] px-1 sm:px-1.5 py-0.2 rounded-full font-bold shrink-0 ${
                     isActive
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-white/25 text-white'
                       : isCompleted
                       ? 'bg-emerald-200/80 text-emerald-900'
                       : isPartial
                       ? 'bg-amber-100 text-amber-900'
-                      : 'bg-stone-100 text-stone-500'
+                      : 'bg-stone-100 text-stone-600'
                   }`}
                 >
-                  {prize.winnerCount}명
+                  {prize.winnerCount}
+                  {isGroup ? '곳' : '명'}
                 </span>
 
                 {isCompleted && (
-                  <span className={`flex items-center text-[10px] ${isActive ? 'text-white' : 'text-emerald-600'}`}>
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  <span
+                    className={`shrink-0 ${
+                      isActive ? 'text-white' : 'text-emerald-600'
+                    }`}
+                  >
+                    <Check className="w-3 h-3 stroke-[3]" />
                   </span>
                 )}
               </div>
+
+              {/* Bottom: Prize Product Name */}
+              {prize.prizeName && (
+                <div
+                  className={`w-full truncate text-[10px] sm:text-xs font-semibold mt-0.5 ${
+                    isActive
+                      ? 'text-amber-100 font-bold'
+                      : isCompleted
+                      ? 'text-emerald-700 font-medium'
+                      : 'text-stone-500 group-hover:text-stone-800'
+                  }`}
+                >
+                  {prize.prizeName}
+                </div>
+              )}
             </button>
           );
         })}
       </div>
-
-      {/* Next Tier Button */}
-      <button
-        id="btn-next-tier"
-        onClick={handleNext}
-        disabled={currentIndex >= prizes.length - 1 || isRolling}
-        className="shrink-0 p-2 rounded-xl bg-white/80 hover:bg-white text-stone-700 disabled:opacity-30 disabled:cursor-not-allowed shadow-sm border border-stone-200/80 transition-all"
-        title="다음 경품 부문"
-      >
-        <ChevronRight className="w-5 h-5" />
-      </button>
     </div>
   );
 };
+

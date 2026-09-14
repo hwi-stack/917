@@ -378,7 +378,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             </div>
 
                             {/* Winner Count */}
-                            <div className="w-24">
+                            <div className="w-20 sm:w-24">
                               <label className="block text-[10px] font-bold text-stone-400 uppercase">
                                 당첨 인원/곳
                               </label>
@@ -386,7 +386,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                                 <input
                                   type="number"
                                   min={1}
-                                  max={20}
+                                  max={50}
                                   value={prize.winnerCount}
                                   onChange={(e) =>
                                     handleUpdatePrizeField(
@@ -403,6 +403,31 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                               </div>
                             </div>
 
+                            {/* Roll Duration (초) */}
+                            <div className="w-18 sm:w-20">
+                              <label className="block text-[10px] font-bold text-stone-400 uppercase">
+                                연출시간
+                              </label>
+                              <div className="flex items-center gap-1">
+                                <input
+                                  type="number"
+                                  step={0.5}
+                                  min={1}
+                                  max={30}
+                                  value={prize.rollDurationSeconds ?? (isGroup ? 7 : 2.5)}
+                                  onChange={(e) =>
+                                    handleUpdatePrizeField(
+                                      prize.id,
+                                      'rollDurationSeconds',
+                                      parseFloat(e.target.value) || 2.5
+                                    )
+                                  }
+                                  className="w-full px-2 py-1.5 text-sm font-bold text-center bg-white border border-stone-300 rounded-lg focus:ring-2 focus:ring-amber-500"
+                                />
+                                <span className="text-xs font-semibold text-stone-500">초</span>
+                              </div>
+                            </div>
+
                             {/* Delete Button */}
                             <div className="self-end sm:self-center mt-2 sm:mt-4">
                               <button
@@ -415,6 +440,32 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                               </button>
                             </div>
                           </div>
+
+                          {/* WINNER ITEMS PER SLOT (당첨자별 개별 품목 설정) */}
+                          {!isGroup && prize.winnerCount > 1 && (
+                            <div className="mt-1 pt-2 border-t border-stone-200/80 bg-blue-50/50 p-2.5 rounded-xl border border-blue-200/60">
+                              <div className="flex items-center justify-between mb-1">
+                                <label className="block text-[11px] font-bold text-blue-900">
+                                  🎁 당첨 번호 카드별 품목명 (쉼표 , 로 구분)
+                                </label>
+                                <span className="text-[10px] text-blue-600 font-medium">
+                                  예: 4등의 경우 '에어프라이기, 믹서기' 입력 시 번호 위에 각각 표시됩니다
+                                </span>
+                              </div>
+                              <input
+                                type="text"
+                                value={(prize.winnerItems || []).join(', ')}
+                                onChange={(e) => {
+                                  const items = e.target.value
+                                    .split(',')
+                                    .map((s) => s.trim());
+                                  handleUpdatePrizeField(prize.id, 'winnerItems', items);
+                                }}
+                                placeholder="예: 에어프라이기, 믹서기"
+                                className="w-full px-2.5 py-1.5 text-xs bg-white border border-stone-300 rounded-lg focus:ring-2 focus:ring-blue-500 font-medium text-stone-800"
+                              />
+                            </div>
+                          )}
 
                           {/* GROUP PRIZE DEDICATED ORGANIZATION CANDIDATES EDITOR */}
                           {isGroup && (

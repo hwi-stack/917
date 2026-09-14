@@ -2,11 +2,13 @@ export type DrawType = 'number' | 'group';
 
 export interface PrizeTier {
   id: string;
-  name: string; // e.g. "단체상", "1등", "2등", "3등", "4등", "5등"
-  prizeName: string; // e.g. "화합과 나눔 특별 선물세트", "스마트 TV"
-  winnerCount: number; // e.g. 1, 3
+  name: string; // e.g. "단체상", "1등", "2등", "3등", "4등", "5등", "7등"
+  prizeName: string; // e.g. "TV", "청소기", "밥솥", "전자레인지", "에어프라이기(1명) / 믹서기(1명)"
+  winnerCount: number; // e.g. 1, 2, 11
   drawType: DrawType; // 'group' for 단체상, 'number' for 1~700
   groupCandidates?: string[]; // List of organization/group names
+  winnerItems?: string[]; // Item name per slot e.g. ['에어프라이기', '믹서기']
+  rollDurationSeconds?: number; // Custom draw duration in seconds (7, 5, 4, 3, 2.5)
   badgeColor: string; // Tailwind color class or hex
   description?: string;
   order: number;

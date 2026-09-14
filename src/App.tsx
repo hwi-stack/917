@@ -6,7 +6,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { PrizeTier, LotteryConfig, DrawRecord } from './types';
-import { loadSavedState, saveState, DEFAULT_CONFIG, DEFAULT_PRIZES } from './utils/storage';
+import { loadSavedState, saveState, DEFAULT_CONFIG, DEFAULT_PRIZES, getSlotItemLabel } from './utils/storage';
 import { BackgroundFestive } from './components/BackgroundFestive';
 import { StageHeader } from './components/StageHeader';
 import { PrizeSelector } from './components/PrizeSelector';
@@ -111,16 +111,16 @@ export default function App() {
   // Save draw results for multiple winners (numbers or groups) simultaneously
   const handleSaveDrawResults = (
     prizeId: string,
-    items: { ticketNumber?: number; groupName?: string }[]
+    items: { ticketNumber?: number; groupName?: string; prizeItem?: string }[]
   ) => {
     const targetPrize = prizes.find((p) => p.id === prizeId);
     if (!targetPrize) return;
 
-    const newRecords: DrawRecord[] = items.map((item) => ({
+    const newRecords: DrawRecord[] = items.map((item, idx) => ({
       id: `record_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       prizeId: targetPrize.id,
       prizeName: targetPrize.name,
-      prizeItem: targetPrize.prizeName,
+      prizeItem: item.prizeItem || getSlotItemLabel(targetPrize, idx) || targetPrize.winnerItems?.[idx] || targetPrize.prizeName,
       ticketNumber: item.ticketNumber,
       groupName: item.groupName,
       drawType: targetPrize.drawType || 'number',
@@ -137,8 +137,8 @@ export default function App() {
   // Redraw a single slot (number or group)
   const handleRedrawSingle = (
     prizeId: string,
-    oldItem: { ticketNumber?: number; groupName?: string },
-    newItem: { ticketNumber?: number; groupName?: string }
+    oldItem: { ticketNumber?: number; groupName?: string; prizeItem?: string },
+    newItem: { ticketNumber?: number; groupName?: string; prizeItem?: string }
   ) => {
     const targetPrize = prizes.find((p) => p.id === prizeId);
     if (!targetPrize) return;
@@ -155,6 +155,7 @@ export default function App() {
             ...r,
             ticketNumber: newItem.ticketNumber,
             groupName: newItem.groupName,
+            prizeItem: newItem.prizeItem || r.prizeItem,
             drawnAt: new Date().toISOString(),
           };
         }
@@ -221,9 +222,9 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="relative min-h-screen w-full flex flex-col items-center justify-center bg-stone-900 overflow-x-hidden font-sans select-none">
-        {/* 16:9 Aspect Ratio Container for Grand Presentation Stage */}
-        <div className="relative w-full max-w-[1920px] aspect-video max-h-screen min-h-screen sm:min-h-0 flex flex-col justify-between overflow-hidden shadow-2xl bg-gradient-to-b from-amber-50/90 via-orange-50/70 to-rose-50/80">
+      <div className="relative h-screen w-full flex flex-col items-center justify-center bg-stone-900 overflow-hidden font-sans select-none">
+        {/* Full viewport stage container that cleanly fits without vertical overflow or clipping */}
+        <div className={`relative w-full max-w-[1920px] h-full flex flex-col justify-between overflow-hidden shadow-2xl bg-gradient-to-b from-amber-50/90 via-orange-50/70 to-rose-50/80 ${isFullscreen ? 'aspect-video max-h-screen' : ''}`}>
           {/* Festive Atmosphere Background */}
           <BackgroundFestive />
 
@@ -243,7 +244,7 @@ export default function App() {
           />
 
           {/* Prize Tiers Selector Bar */}
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 pt-1">
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-2 sm:px-4 pt-0.5 shrink-0">
             <PrizeSelector
               prizes={prizes}
               activePrizeId={activePrize?.id || ''}
@@ -253,7 +254,7 @@ export default function App() {
             />
           </div>
 
-          {/* Main 16:9 Drawing Stage Area */}
+          {/* Main Drawing Stage Area */}
           {activePrize && (
             <DrawStage
               key={activePrize.id}
@@ -267,22 +268,21 @@ export default function App() {
           )}
 
           {/* Bottom Status Footer Strip */}
-          <footer className="relative z-10 w-full px-6 py-2 bg-white/60 backdrop-blur-xs border-t border-amber-200/60 flex items-center justify-between text-xs text-stone-500">
-            <div className="flex items-center gap-2">
+          <footer className="relative z-10 w-full px-4 sm:px-6 py-1 bg-white/70 backdrop-blur-xs border-t border-amber-200/60 flex items-center justify-between text-[11px] sm:text-xs text-stone-500 shrink-0">
+            <div className="flex items-center gap-2 truncate">
               <span className="font-bold text-orange-800">
                 {config.organization} 개관 20주년 기념식
               </span>
-              <span className="text-stone-400">•</span>
-              <span className="font-medium text-stone-600">
+              <span className="text-stone-400 hidden sm:inline">•</span>
+              <span className="font-medium text-stone-600 hidden sm:inline">
                 &quot;{config.eventTitle}&quot;
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-[11px] font-semibold text-stone-500">
-              <span>추첨 대상 번호: <strong>{config.minNumber}번 ~ {config.maxNumber}번</strong></span>
-              <span>중복 당첨 방지: <strong className="text-emerald-700">{config.allowDuplicates ? '비활성' : '적용 중'}</strong></span>
-              <span>클라우드 동기화: <strong className="text-orange-700">Firebase Firestore</strong></span>
-              <span>화면 비율: <strong>16:9 대화면 무대 모드</strong></span>
+            <div className="flex items-center gap-2 sm:gap-4 text-[10px] sm:text-[11px] font-semibold text-stone-500 shrink-0">
+              <span>추첨 대상: <strong>{config.minNumber}~{config.maxNumber}번</strong></span>
+              <span className="hidden md:inline">중복 방지: <strong className="text-emerald-700">{config.allowDuplicates ? '비활성' : '적용 중'}</strong></span>
+              <span className="hidden lg:inline">동기화: <strong className="text-orange-700">Firebase Firestore</strong></span>
             </div>
           </footer>
         </div>

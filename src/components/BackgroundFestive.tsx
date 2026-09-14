@@ -27,13 +27,17 @@ export const BackgroundFestive: React.FC = () => {
         <rect width="100%" height="100%" fill="url(#festive-grid)" />
       </svg>
 
-      {/* Floating subtle celebratory sparkle glyphs */}
+      {/* Floating subtle celebratory sparkle glyphs & confetti petals */}
       <div className="absolute top-12 left-16 text-amber-300/40 text-3xl select-none animate-pulse">✦</div>
       <div className="absolute top-28 right-24 text-rose-300/40 text-2xl select-none animate-pulse delay-300">★</div>
+      <div className="absolute top-16 right-1/3 text-amber-400/35 text-xl select-none animate-pulse delay-500">✦</div>
+      <div className="absolute top-24 left-1/4 text-rose-400/30 text-lg select-none animate-pulse delay-700">★</div>
       <div className="absolute bottom-20 left-32 text-orange-300/35 text-4xl select-none animate-pulse delay-700">✦</div>
       <div className="absolute bottom-36 right-36 text-amber-400/40 text-2xl select-none animate-pulse delay-500">★</div>
+      <div className="absolute bottom-16 left-1/2 text-rose-300/35 text-2xl select-none animate-pulse delay-300">✧</div>
       <div className="absolute top-1/2 left-8 text-rose-400/30 text-2xl select-none animate-pulse delay-1000">✧</div>
       <div className="absolute top-1/3 right-12 text-amber-400/35 text-3xl select-none animate-pulse delay-200">✧</div>
+      <div className="absolute bottom-1/3 left-16 text-amber-400/30 text-xl select-none animate-pulse delay-600">★</div>
     </div>
   );
 };

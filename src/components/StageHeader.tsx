@@ -32,32 +32,32 @@ export const StageHeader: React.FC<StageHeaderProps> = ({
   syncStatus = 'connected',
 }) => {
   return (
-    <header className="w-full relative z-20 flex flex-col md:flex-row items-center justify-between gap-3 px-4 sm:px-8 py-3 bg-white/75 backdrop-blur-md border-b border-amber-200/80 shadow-xs">
+    <header className="w-full relative z-20 flex flex-row items-center justify-between gap-2 px-3 sm:px-6 py-1.5 sm:py-2 bg-white/80 backdrop-blur-md border-b border-amber-200/80 shadow-xs shrink-0">
       {/* Left: Organization & Slogan */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* 20th Anniversary emblem badge */}
-        <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/20 ring-2 ring-amber-300">
+        <div className="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 text-white shadow-md shadow-orange-500/20 ring-2 ring-amber-300 shrink-0">
           <div className="text-center leading-none">
-            <span className="block text-[9px] font-bold tracking-tighter uppercase opacity-90">20th</span>
-            <span className="block text-sm font-black">수원</span>
+            <span className="block text-[8px] sm:text-[9px] font-bold tracking-tighter uppercase opacity-90">20th</span>
+            <span className="block text-xs sm:text-sm font-black">수원</span>
           </div>
           <div className="absolute -top-1 -right-1">
-            <Sparkles className="w-3.5 h-3.5 text-amber-200 animate-spin" style={{ animationDuration: '8s' }} />
+            <Sparkles className="w-3 h-3 text-amber-200 animate-spin" style={{ animationDuration: '8s' }} />
           </div>
         </div>
 
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs sm:text-sm font-bold text-orange-800 tracking-tight">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-orange-800 tracking-tight">
               {config.organization}
             </span>
             <span className="inline-block w-1 h-1 rounded-full bg-orange-400" />
-            <span className="text-xs text-stone-500 font-medium">
+            <span className="text-[10px] sm:text-xs text-stone-500 font-medium hidden sm:inline">
               추첨번호 1~{config.maxNumber}번
             </span>
           </div>
 
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-black bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 bg-clip-text text-transparent tracking-tight">
+          <h1 className="text-sm sm:text-lg md:text-xl font-black bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 bg-clip-text text-transparent tracking-tight">
             {config.eventTitle}
           </h1>
         </div>
